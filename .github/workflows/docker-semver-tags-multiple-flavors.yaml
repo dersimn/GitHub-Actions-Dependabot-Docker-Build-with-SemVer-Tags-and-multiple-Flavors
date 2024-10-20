@@ -11,8 +11,11 @@ on:
       - '!fail/**'
       - '!dead-end/**'
       - '!trash/**'
+      - '!dependabot/**'  # avoid running Workflow twice, because Dependabot creates a branch ("push" event) and a pull request)
     tags:
       - 'v*.*.*'
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 env:
   TARGET_IMAGE: ${{ github.repository }}  # only if username + repository is all lowercase and the same as user + repo on Docker Hubs
@@ -96,7 +99,7 @@ jobs:
             core.setOutput('minor-tag', minorTag);
             core.endGroup();
 
-  release:
+  build:
     name: Build ${{ matrix.flavor }}
     needs: tags
     runs-on: ubuntu-latest
@@ -171,6 +174,7 @@ jobs:
 
       - name: Login to Docker Hub
         uses: docker/login-action@v2
+        if: github.event_name != 'pull_request'
         with:
           username: ${{ vars.DOCKERHUB_USERNAME || github.repository_owner }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -178,7 +182,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
           context: .
           file: ${{ matrix.dockerfile }}
           platforms: ${{ matrix.build-platforms }}
@@ -191,3 +195,20 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo '${{ steps.meta.outputs.tags }}' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
+
+  dependabot-auto-merge:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    permissions:
+      pull-requests: write
+      contents: write
+    steps:
+      - name: Enable auto-merge for Dependabot PRs
+        run: gh pr merge --auto --merge "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          # Using GITHUB_TOKEN __won't__ trigger following Workflows
+          # see: https://github.com/orgs/community/discussions/55906
+          #GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
