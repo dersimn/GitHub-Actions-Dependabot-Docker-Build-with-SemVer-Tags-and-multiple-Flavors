@@ -1,6 +1,6 @@
 FROM alpine:3.19.4@sha256:ae65dbf8749a7d4527648ccee1fa3deb6bfcae34cbc30fc67aa45c44dcaa90ee
 
-RUN apk add bash=5.2.21-r0  # this breaks on alpine:3.20.x
+#RUN apk add bash=5.2.21-r0  # this breaks on alpine:3.20.x
 
 RUN date > /build-date
 CMD ["cat", "/build-date"]
