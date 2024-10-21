@@ -16,6 +16,8 @@ on:
       - 'v*.*.*'
   pull_request:
     types: [opened, synchronize, reopened]
+  release:  # Tags created by Semantic Releases will use the release event
+    types: [published]
 
 env:
   TARGET_IMAGE: ${{ github.repository }}  # only if username + repository is all lowercase and the same as user + repo on Docker Hubs
@@ -208,7 +210,7 @@ jobs:
         run: gh pr merge --auto --merge "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          GH_TOKEN: ${{ secrets.DEPENDABOT_TOKEN }}
           # Using GITHUB_TOKEN __won't__ trigger following Workflows
           # see: https://github.com/orgs/community/discussions/55906
           #GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

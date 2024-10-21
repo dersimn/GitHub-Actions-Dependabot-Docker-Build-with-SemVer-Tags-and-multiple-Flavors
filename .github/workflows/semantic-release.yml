@@ -1,0 +1,32 @@
+name: Semantic Release
+run-name: ${{ github.ref_name }} (${{github.ref_type}}, triggered by ${{ github.event_name }})
+
+permissions:  # Permissions are needed even if this is used with a Personal Access Token
+  contents: write
+  issues: write
+  pull-requests: write
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      # Run on every branch
+      - '**'
+      # Except branches beginning with:
+      - '!fail/**'
+      - '!dead-end/**'
+      - '!trash/**'
+
+jobs:
+  semantic-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Semantic Release
+        uses: cycjimmy/semantic-release-action@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
+          # Using GITHUB_TOKEN __won't__ trigger following Workflows
+          # see: https://github.com/orgs/community/discussions/55906
+          #GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

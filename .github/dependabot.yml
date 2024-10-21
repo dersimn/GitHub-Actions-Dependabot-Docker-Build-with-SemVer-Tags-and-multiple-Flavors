@@ -5,3 +5,8 @@ updates:
     directory: /
     schedule:
       interval: daily
+    # https://dev.to/kengotoda/a-complete-guide-to-use-dependabot-with-semantic-release-and-vercel-ncc-for-github-actions-230p
+    commit-message:
+      prefix: fix
+      prefix-development: chore
+      include: scope
