@@ -1,4 +1,4 @@
-FROM debian:12.11@sha256:b6507e340c43553136f5078284c8c68d86ec8262b1724dde73c325e8d3dcdeba
+FROM debian:13.2@sha256:8f6a88feef3ed01a300dafb87f208977f39dccda1fd120e878129463f7fa3b8f
 
 RUN date > /build-date
 CMD ["cat", "/build-date"]
